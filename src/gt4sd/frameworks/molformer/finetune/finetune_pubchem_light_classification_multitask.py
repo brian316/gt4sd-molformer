@@ -431,7 +431,6 @@ class MultitaskEmbeddingDataset(torch.utils.data.Dataset):
         self.df = self.df.reset_index(drop=True)
 
     def __getitem__(self, index):
-
         canonical_smiles = self.df.loc[index, "canonical_smiles"]
         measures = self.df.loc[index, self.measure_names].to_numpy()
         mask = [0.0 if np.isnan(x) else 1.0 for x in measures]
@@ -570,7 +569,6 @@ class CheckpointEveryNSteps(pl.Callback):
             global_step % self.save_step_frequency == 0
             and self.save_step_frequency > 10
         ):
-
             if self.use_modelcheckpoint_filename:
                 filename = trainer.checkpoint_callback.filename  # type: ignore
             else:

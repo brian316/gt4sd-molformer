@@ -279,7 +279,6 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
 
 
 if __name__ == "__main__":
-
     t0 = time.time()
     logger.info("start time is {}".format(t0))
     dataset = DatasetPubchem()

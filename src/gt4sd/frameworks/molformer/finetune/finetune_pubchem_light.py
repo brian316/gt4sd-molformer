@@ -14,6 +14,7 @@ import torch.nn.functional as F
 from apex import optimizers
 from fast_transformers.feature_maps import GeneralizedRandomFeatures
 from fast_transformers.masking import LengthMask as LM
+from ft_utils import normalize_smiles
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import seed
 from rotate_attention.rotate_builder import RotateEncoderBuilder as rotate_builder
@@ -22,7 +23,6 @@ from sklearn.metrics import r2_score
 from tokenizer.tokenizer import MolTranBertTokenizer
 from torch import nn
 from torch.utils.data import DataLoader
-from ft_utils import normalize_smiles
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -131,7 +131,6 @@ class LightningModule(pl.LightningModule):
             return tensor
 
     def get_loss(self, smiles_emb, measures):
-
         z_pred = self.net.forward(smiles_emb).squeeze()
         measures = measures.float()
 
@@ -509,7 +508,6 @@ class CheckpointEveryNSteps(pl.Callback):
             global_step % self.save_step_frequency == 0
             and self.save_step_frequency > 10
         ):
-
             if self.use_modelcheckpoint_filename:
                 filename = trainer.checkpoint_callback.filename  # type: ignore
             else:

@@ -236,5 +236,4 @@ class Encoder:
 
 
 if __name__ == "__main__":
-
     text_encoder = Encoder()

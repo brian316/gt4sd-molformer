@@ -22,7 +22,6 @@ class ZincConfig(datasets.BuilderConfig):
 
 
 class Zinc(datasets.ArrowBasedBuilder):
-
     BUILDER_CONFIG_CLASS = ZincConfig
 
     def _info(self):
@@ -58,7 +57,6 @@ class Zinc(datasets.ArrowBasedBuilder):
         return splits
 
     def _generate_tables(self, files):
-
         for file_idx, file in enumerate(files):
             batch_idx = 0
             with open(file, "r", encoding=self.config.encoding) as f:

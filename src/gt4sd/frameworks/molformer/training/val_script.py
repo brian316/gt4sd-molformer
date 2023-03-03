@@ -22,7 +22,6 @@ class ValConfig(datasets.BuilderConfig):
 
 
 class Val(datasets.ArrowBasedBuilder):
-
     BUILDER_CONFIG_CLASS = ValConfig
 
     def _info(self):
@@ -58,7 +57,6 @@ class Val(datasets.ArrowBasedBuilder):
         return splits
 
     def _generate_tables(self, files):
-
         for file_idx, file in enumerate(files):
             batch_idx = 0
             with open(file, "r", encoding=self.config.encoding) as f:

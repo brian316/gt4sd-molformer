@@ -23,7 +23,6 @@ class PubChemConfig(datasets.BuilderConfig):
 
 
 class PubChem(datasets.ArrowBasedBuilder):
-
     BUILDER_CONFIG_CLASS = PubChemConfig
 
     def _info(self):
@@ -59,7 +58,6 @@ class PubChem(datasets.ArrowBasedBuilder):
         return splits
 
     def _generate_tables(self, files):
-
         for file_idx, file in enumerate(files):
             batch_idx = 0
             with open(file, "r", encoding=self.config.encoding) as f:

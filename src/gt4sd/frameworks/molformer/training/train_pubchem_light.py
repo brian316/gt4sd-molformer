@@ -111,7 +111,6 @@ class LightningModule(pl.LightningModule):
             module.weight.data.fill_(1.0)
 
     def configure_optimizers(self):
-
         # separate out all parameters to those that will and won't experience regularizing weight decay
         decay = set()
         no_decay = set()
@@ -200,7 +199,6 @@ class LightningModule(pl.LightningModule):
         return {"loss": loss}  # , 'log':tensorboard_log}
 
     def validation_epoch_end(self, outputs):
-
         avg_loss = torch.tensor([output["loss"] for output in outputs]).mean()
         loss = {"loss": avg_loss.item()}
         self.log("validation_loss", loss["loss"])
@@ -361,7 +359,6 @@ class CheckpointEveryNSteps(pl.Callback):
             global_step % self.save_step_frequency == 0
             and self.save_step_frequency > 10
         ):
-
             if self.use_modelcheckpoint_filename:
                 filename = trainer.checkpoint_callback.filename  # type: ignore
             else:
@@ -521,5 +518,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
