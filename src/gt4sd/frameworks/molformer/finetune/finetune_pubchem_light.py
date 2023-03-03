@@ -17,7 +17,6 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import seed
 from scipy.stats import pearsonr
 from sklearn.metrics import r2_score
-from ft_tokenizer.ft_tokenizer import MolTranBertTokenizer
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -25,6 +24,7 @@ from .ft_args import parse_args
 from .ft_rotate_attention.ft_rotate_builder import (
     RotateEncoderBuilder as rotate_builder,
 )
+from .ft_tokenizer.ft_tokenizer import MolTranBertTokenizer
 from .ft_utils import normalize_smiles
 
 logger = logging.getLogger(__name__)
