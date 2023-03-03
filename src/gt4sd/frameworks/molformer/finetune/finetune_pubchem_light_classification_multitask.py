@@ -17,7 +17,7 @@ from fast_transformers.masking import LengthMask as LM
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import seed
 from sklearn.metrics import roc_auc_score
-from tokenizer.tokenizer import MolTranBertTokenizer
+from ft_tokenizer.ft_tokenizer import MolTranBertTokenizer
 from torch import nn
 from torch.utils.data import DataLoader
 
