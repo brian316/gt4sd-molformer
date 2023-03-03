@@ -360,16 +360,8 @@ class PropertyPredictionDataset(torch.utils.data.Dataset):
             for smi in all_smiles
         }
 
-        bert_vocab_path = pkg_resources.resource_filename(
-            "gt4sd",
-            os.path.join(
-                "frameworks",
-                "molformer",
-                "finetune",
-                "bert_vocab.txt",
-            ),
-        )
-        self.tokenizer = MolTranBertTokenizer(bert_vocab_path)
+        self.tokenizer = tokenizer
+
         if measure_name:
             all_measures = df[measure_name].tolist()
             self.measure_map = {
@@ -568,7 +560,16 @@ def main():
 
     run_name = "_".join(map(str, run_name_fields))
 
-    tokenizer = MolTranBertTokenizer("bert_vocab.txt")
+    bert_vocab_path = pkg_resources.resource_filename(
+        "gt4sd",
+        os.path.join(
+            "frameworks",
+            "molformer",
+            "finetune",
+            "bert_vocab.txt",
+        ),
+    )
+    tokenizer = MolTranBertTokenizer(bert_vocab_path)
 
     logger.info(run_name)
 
