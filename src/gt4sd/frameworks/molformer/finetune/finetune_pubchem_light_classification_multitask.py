@@ -7,6 +7,7 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+import pkg_resources
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -692,7 +693,17 @@ def main():
 
     logger.info(run_name)
 
-    tokenizer = MolTranBertTokenizer("bert_vocab.txt")
+    bert_vocab_path = pkg_resources.resource_filename(
+        "gt4sd",
+        os.path.join(
+            "frameworks",
+            "molformer",
+            "finetune",
+            "bert_vocab.txt",
+        ),
+    )
+
+    tokenizer = MolTranBertTokenizer(bert_vocab_path)
 
     datamodule = PropertyPredictionDataModule(margs, tokenizer)
     margs.dataset_names = "valid test".split()

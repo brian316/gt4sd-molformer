@@ -7,6 +7,7 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+import pkg_resources
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -359,7 +360,16 @@ class PropertyPredictionDataset(torch.utils.data.Dataset):
             for smi in all_smiles
         }
 
-        self.tokenizer = MolTranBertTokenizer("bert_vocab.txt")
+        bert_vocab_path = pkg_resources.resource_filename(
+            "gt4sd",
+            os.path.join(
+                "frameworks",
+                "molformer",
+                "finetune",
+                "bert_vocab.txt",
+            ),
+        )
+        self.tokenizer = MolTranBertTokenizer(bert_vocab_path)
         if measure_name:
             all_measures = df[measure_name].tolist()
             self.measure_map = {
