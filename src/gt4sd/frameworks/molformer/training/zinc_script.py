@@ -61,12 +61,12 @@ class Zinc(datasets.ArrowBasedBuilder):
             batch_idx = 0
             with open(file, "r", encoding=self.config.encoding) as f:
                 while True:
-                    batch = f.read(self.config.chunksize)
+                    batch = f.read(self.config.chunksize) #type: ignore
                     if not batch:
                         break
                     batch += f.readline()  # finish current line
-                    batch = batch.splitlines()
-                    batch = [word.split()[0] for word in batch if "smiles" not in word]
+                    batch = batch.splitlines() #type: ignore
+                    batch = [word.split()[0] for word in batch if "smiles" not in word] #type: ignore
                     pa_table = pa.Table.from_arrays(
                         [pa.array(batch)], schema=pa.schema({"text": pa.string()})
                     )

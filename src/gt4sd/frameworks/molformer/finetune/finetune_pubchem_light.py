@@ -5,7 +5,7 @@ import time
 from argparse import Namespace
 from functools import partial
 
-import ft_args
+from .ft_args import parse_args
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
@@ -14,10 +14,10 @@ import torch.nn.functional as F
 from apex import optimizers
 from fast_transformers.feature_maps import GeneralizedRandomFeatures
 from fast_transformers.masking import LengthMask as LM
-from ft_utils import normalize_smiles
+from .ft_utils import normalize_smiles
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import seed
-from rotate_attention.rotate_builder import RotateEncoderBuilder as rotate_builder
+from .ft_rotate_attention.ft_rotate_builder import RotateEncoderBuilder as rotate_builder
 from scipy.stats import pearsonr
 from sklearn.metrics import r2_score
 from tokenizer.tokenizer import MolTranBertTokenizer
@@ -531,7 +531,7 @@ def append_to_file(filename, line):
 
 
 def main():
-    margs = ft_args.parse_args()
+    margs = parse_args()
     logger.info(
         f"Using {str(torch.cuda.device_count())} GPUs---------------------------------------------------------------------"
     )

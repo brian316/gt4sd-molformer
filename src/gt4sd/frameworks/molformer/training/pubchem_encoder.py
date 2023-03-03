@@ -30,14 +30,14 @@ class Encoder:
         self.mlm_probability = 0.15
         self.avg_length = 66
         self.tail = 122
-        self.b0_cache = collections.deque()
-        self.b1_cache = collections.deque()
-        self.b2_cache = collections.deque()
-        self.b3_cache = collections.deque()
-        self.bucket0 = collections.deque()
-        self.bucket1 = collections.deque()
-        self.bucket2 = collections.deque()
-        self.bucket3 = collections.deque()
+        self.b0_cache: collections.deque = collections.deque()
+        self.b1_cache: collections.deque = collections.deque()
+        self.b2_cache: collections.deque = collections.deque()
+        self.b3_cache: collections.deque = collections.deque()
+        self.bucket0: collections.deque = collections.deque()
+        self.bucket1: collections.deque = collections.deque()
+        self.bucket2: collections.deque = collections.deque()
+        self.bucket3: collections.deque = collections.deque()
         if feature_size == 32:
             self.b0_max = 1100
             self.b1_max = 700
@@ -174,7 +174,7 @@ class Encoder:
         probability_matrix = torch.full(labels.size(), self.mlm_probability)
         if special_tokens_mask is None:
             special_tokens_mask = [
-                self.tokenizer.get_special_tokens_mask(
+                self.tokenizer.get_special_tokens_mask( #type: ignore
                     val, already_has_special_tokens=True
                 )
                 for val in labels.tolist()

@@ -67,8 +67,8 @@ class PubChem(datasets.ArrowBasedBuilder):
                     if not batch:
                         break
                     batch += f.readline()  # finish current line
-                    batch = batch.splitlines()
-                    batch = [word.split()[-1] for word in batch]
+                    batch = batch.splitlines() #type: ignore
+                    batch = [word.split()[-1] for word in batch] #type: ignore
                     pa_table = pa.Table.from_arrays(
                         [pa.array(batch)], schema=pa.schema({"text": pa.string()})
                     )

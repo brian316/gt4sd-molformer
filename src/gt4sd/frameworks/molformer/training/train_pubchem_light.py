@@ -7,7 +7,7 @@ import shutil
 import subprocess
 from functools import partial
 
-import args
+from .args import parse_args
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -15,9 +15,9 @@ import torch.nn.functional as F
 from apex import optimizers
 from datasets import concatenate_datasets, load_dataset
 from fast_transformers.feature_maps import GeneralizedRandomFeatures
-from pubchem_encoder import Encoder
+from .pubchem_encoder import Encoder
 from pytorch_lightning.utilities import rank_zero_only, rank_zero_warn, seed
-from rotate_attention.rotate_builder import RotateEncoderBuilder as rotate_builder
+from .rotate_attention.rotate_builder import RotateEncoderBuilder as rotate_builder
 from torch import nn
 from torch.utils.data import DataLoader
 
@@ -191,8 +191,8 @@ class LightningModule(pl.LightningModule):
                 true_token_lprobs = F.cross_entropy(logits, targets, ignore_index=-100)
                 loss_tmp = true_token_lprobs / len(idxl)
             if chunk < len(idxl) - 1:
-                loss_tmp.backward()
-                loss += loss_tmp.detach()
+                loss_tmp.backward() #type: ignore
+                loss += loss_tmp.detach() #type: ignore
             else:
                 loss += loss_tmp
         self.log("train_loss", loss, on_step=True)
@@ -229,7 +229,7 @@ class LightningModule(pl.LightningModule):
                 true_token_lprobs = F.cross_entropy(logits, targets, ignore_index=-100)
                 loss_tmp = true_token_lprobs / len(idxl)
             if chunk < len(idxl) - 1:
-                loss += loss_tmp.detach()
+                loss += loss_tmp.detach() #type: ignore
             else:
                 loss += loss_tmp
         self.log("train_loss", loss, on_step=True)
@@ -397,7 +397,7 @@ def get_nccl_socket_ifname():
             continue
         if "link/infiniband" in line:
             all_names.append(name)
-    os.environ["NCCL_SOCKET_IFNAME"] = ",".join(all_names)
+    os.environ["NCCL_SOCKET_IFNAME"] = ",".join(all_names) #type: ignore
 
 
 def fix_infiniband():
@@ -428,7 +428,7 @@ def fix_infiniband():
 def main():
     fix_infiniband()
 
-    config = args.parse_args()
+    config = parse_args()
     if config.num_nodes > 1:
         # logger.info("Using " + str(config.num_nodes) + " Nodes----------------------------------------------------------------------")
         LSB_MCPU_HOSTS = os.environ["LSB_MCPU_HOSTS"].split(

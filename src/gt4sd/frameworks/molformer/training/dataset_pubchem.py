@@ -21,13 +21,13 @@ class SS:
 class DatasetPubchem(torch.utils.data.IterableDataset):
     # class DatasetPubchem(torch.utils.data.Dataset):
 
-    def __init__(self, train_load=None, vocab=None, randomize_smiles=False):
+    def __init__(self, train_load=None, vocab=None, randomize=False):
         """PubChem Dataset
 
 
         Keyword Arguments:
             database_file {[type]} -- [description]
-            randomize_smiles {bool} -- Randomize the smiles each epoch
+            randomize {bool} -- Randomize the smiles each epoch
         """
 
         pattern = r"(\[[^\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>|\*|\$|\%[0-9]{2}|[0-9])"
@@ -44,7 +44,7 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
         #        self.smiles.append(''.join(self.regex.findall(line.split()[-1])))
 
         # self.smiles = pd.read_csv(self.database_file)[smiles_header_name].tolist()
-        self.randomize_smiles = randomize_smiles
+        self.randomize = randomize
         if vocab is not None:
             self.vocab = vocab
         else:
@@ -94,7 +94,7 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
     #    #logger.info(self.vocab.string2ids(smiles, add_bos=True, add_eos=True))
     #    #logger.info(np.asarray(self.vocab.string2ids(smiles, add_bos=True, add_eos=True)))
     #
-    #    if self.randomize_smiles:
+    #    if self.randomize:
     #        smiles = self.randomize_smiles(smiles, self.isomeric_smiles)
     #    if self.is_measure_available:
     #        return smiles, self.measure[index]
@@ -127,7 +127,7 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
                 target, batch_first=True, padding_value=pad
             )
             target = torch.cat(
-                (target, torch.full((target.size(0), 1), pad, dtype=int)), dim=-1
+                (target, torch.full((target.size(0), 1), pad, dtype=int)), dim=-1 #type: ignore
             )
             lengths_mid = None
             batch_tmp_mid = None
