@@ -67,7 +67,7 @@ class Val(datasets.ArrowBasedBuilder):
                     batch += f.readline()  # finish current line
                     batch = batch.splitlines()  # type: ignore
                     batch = [  # type: ignore
-                        word.split(",")[0] for word in batch if "smiles" not in word
+                        word.split(",")[0] for word in batch if "smiles" not in word # type: ignore
                     ]
                     pa_table = pa.Table.from_arrays(
                         [pa.array(batch)], schema=pa.schema({"text": pa.string()})
