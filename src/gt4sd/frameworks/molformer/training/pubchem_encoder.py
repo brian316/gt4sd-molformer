@@ -174,7 +174,7 @@ class Encoder:
         probability_matrix = torch.full(labels.size(), self.mlm_probability)
         if special_tokens_mask is None:
             special_tokens_mask = [
-                self.tokenizer.get_special_tokens_mask( #type: ignore
+                self.tokenizer.get_special_tokens_mask(  # type: ignore
                     val, already_has_special_tokens=True
                 )
                 for val in labels.tolist()

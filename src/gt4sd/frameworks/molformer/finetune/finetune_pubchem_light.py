@@ -5,7 +5,6 @@ import time
 from argparse import Namespace
 from functools import partial
 
-from .ft_args import parse_args
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
@@ -14,15 +13,19 @@ import torch.nn.functional as F
 from apex import optimizers
 from fast_transformers.feature_maps import GeneralizedRandomFeatures
 from fast_transformers.masking import LengthMask as LM
-from .ft_utils import normalize_smiles
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import seed
-from .ft_rotate_attention.ft_rotate_builder import RotateEncoderBuilder as rotate_builder
 from scipy.stats import pearsonr
 from sklearn.metrics import r2_score
 from tokenizer.tokenizer import MolTranBertTokenizer
 from torch import nn
 from torch.utils.data import DataLoader
+
+from .ft_args import parse_args
+from .ft_rotate_attention.ft_rotate_builder import (
+    RotateEncoderBuilder as rotate_builder,
+)
+from .ft_utils import normalize_smiles
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

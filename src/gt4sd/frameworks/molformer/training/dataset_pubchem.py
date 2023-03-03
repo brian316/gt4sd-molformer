@@ -127,7 +127,7 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
                 target, batch_first=True, padding_value=pad
             )
             target = torch.cat(
-                (target, torch.full((target.size(0), 1), pad, dtype=int)), dim=-1 #type: ignore
+                (target, torch.full((target.size(0), 1), pad, dtype=int)), dim=-1  # type: ignore
             )
             lengths_mid = None
             batch_tmp_mid = None
