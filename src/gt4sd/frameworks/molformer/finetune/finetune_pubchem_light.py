@@ -4,6 +4,7 @@ import random
 import time
 from argparse import Namespace
 from functools import partial
+from typing import Any, Dict
 
 import importlib_resources
 import numpy as np
@@ -54,14 +55,14 @@ class LightningModule(pl.LightningModule):
             )
 
         self.config = config
-        self.hparams = config
+        self.model_hparams = config
         self.mode = config.mode
         self.save_hyperparameters(config)
         self.tokenizer = tokenizer
         self.min_loss = {
-            self.hparams.measure_name
+            self.model_hparams.measure_name
             + "min_valid_loss": torch.finfo(torch.float32).max,
-            self.hparams.measure_name + "min_epoch": 0,
+            self.model_hparams.measure_name + "min_epoch": 0,
         }
 
         # Word embeddings layer
@@ -154,7 +155,7 @@ class LightningModule(pl.LightningModule):
 
     def on_save_checkpoint(self, checkpoint):
         # save RNG states each time the model and states are saved
-        out_dict = dict()
+        out_dict: Dict[str, Any] = dict()
         out_dict["torch_state"] = torch.get_rng_state()
         out_dict["cuda_state"] = torch.cuda.get_rng_state()
         if np:
@@ -234,7 +235,7 @@ class LightningModule(pl.LightningModule):
                 "weight_decay": 0.0,
             },
         ]
-        if self.hparams.measure_name == "r2":
+        if self.model_hparams.measure_name == "r2":
             betas = (0.9, 0.999)
         else:
             betas = (0.9, 0.99)
@@ -290,7 +291,7 @@ class LightningModule(pl.LightningModule):
         # results_by_dataset = self.split_results_by_dataset(outputs)
         tensorboard_logs = {}
         for dataset_idx, batch_outputs in enumerate(outputs):
-            dataset = self.hparams.dataset_names[dataset_idx]
+            dataset = self.model_hparams.dataset_names[dataset_idx]
             logger.info("x_val_loss: {}".format(batch_outputs[0]["val_loss"].item()))
             avg_loss = torch.stack([x["val_loss"] for x in batch_outputs]).mean()
             preds = torch.cat([x["pred"] for x in batch_outputs])
@@ -304,9 +305,9 @@ class LightningModule(pl.LightningModule):
             tensorboard_logs.update(
                 {
                     # dataset + "_avg_val_loss": avg_loss,
-                    self.hparams.measure_name + "_" + dataset + "_loss": val_loss,
-                    self.hparams.measure_name + "_" + dataset + "_r2": r2,
-                    self.hparams.measure_name
+                    self.model_hparams.measure_name + "_" + dataset + "_loss": val_loss,
+                    self.model_hparams.measure_name + "_" + dataset + "_r2": r2,
+                    self.model_hparams.measure_name
                     + "_"
                     + dataset
                     + "_pearsonr": pearson_r[0],
@@ -314,38 +315,40 @@ class LightningModule(pl.LightningModule):
             )
 
         if (
-            tensorboard_logs[self.hparams.measure_name + "_valid_loss"]
-            < self.min_loss[self.hparams.measure_name + "min_valid_loss"]
+            tensorboard_logs[self.model_hparams.measure_name + "_valid_loss"]
+            < self.min_loss[self.model_hparams.measure_name + "min_valid_loss"]
         ):
             self.min_loss[
-                self.hparams.measure_name + "min_valid_loss"
-            ] = tensorboard_logs[self.hparams.measure_name + "_valid_loss"]
+                self.model_hparams.measure_name + "min_valid_loss"
+            ] = tensorboard_logs[self.model_hparams.measure_name + "_valid_loss"]
             self.min_loss[
-                self.hparams.measure_name + "min_test_loss"
-            ] = tensorboard_logs[self.hparams.measure_name + "_test_loss"]
-            self.min_loss[self.hparams.measure_name + "min_epoch"] = self.current_epoch
+                self.model_hparams.measure_name + "min_test_loss"
+            ] = tensorboard_logs[self.model_hparams.measure_name + "_test_loss"]
+            self.min_loss[
+                self.model_hparams.measure_name + "min_epoch"
+            ] = self.current_epoch
 
-        tensorboard_logs[self.hparams.measure_name + "_min_valid_loss"] = self.min_loss[
-            self.hparams.measure_name + "min_valid_loss"
-        ]
-        tensorboard_logs[self.hparams.measure_name + "_min_test_loss"] = self.min_loss[
-            self.hparams.measure_name + "min_test_loss"
-        ]
+        tensorboard_logs[
+            self.model_hparams.measure_name + "_min_valid_loss"
+        ] = self.min_loss[self.model_hparams.measure_name + "min_valid_loss"]
+        tensorboard_logs[
+            self.model_hparams.measure_name + "_min_test_loss"
+        ] = self.min_loss[self.model_hparams.measure_name + "min_test_loss"]
 
-        self.logger.log_metrics(tensorboard_logs, self.global_step)
+        self.logger.log_metrics(tensorboard_logs, self.global_step)  # type: ignore
 
         for k in tensorboard_logs.keys():
             self.log(k, tensorboard_logs[k])
 
         logger.info("Validation: Current Epoch", self.current_epoch)
         append_to_file(
-            os.path.join(self.hparams.results_dir, "results_" + ".csv"),
-            f"{self.hparams.measure_name}, {self.current_epoch},"
-            + f"{tensorboard_logs[self.hparams.measure_name + '_valid_loss']},"
-            + f"{tensorboard_logs[self.hparams.measure_name + '_test_loss']},"
-            + f"{self.min_loss[self.hparams.measure_name + 'min_epoch']},"
-            + f"{self.min_loss[self.hparams.measure_name + 'min_valid_loss']},"
-            + f"{self.min_loss[self.hparams.measure_name + 'min_test_loss']}",
+            os.path.join(self.model_hparams.results_dir, "results_" + ".csv"),
+            f"{self.model_hparams.measure_name}, {self.current_epoch},"
+            + f"{tensorboard_logs[self.model_hparams.measure_name + '_valid_loss']},"
+            + f"{tensorboard_logs[self.model_hparams.measure_name + '_test_loss']},"
+            + f"{self.min_loss[self.model_hparams.measure_name + 'min_epoch']},"
+            + f"{self.min_loss[self.model_hparams.measure_name + 'min_valid_loss']},"
+            + f"{self.min_loss[self.model_hparams.measure_name + 'min_test_loss']}",
         )
 
         return {"avg_val_loss": avg_loss}
@@ -409,54 +412,50 @@ class PropertyPredictionDataModule(pl.LightningDataModule):
         super(PropertyPredictionDataModule, self).__init__()
         if type(hparams) is dict:
             hparams = Namespace(**hparams)
-        self.hparams = hparams
+        self.model_hparams = hparams
         # self.smiles_emb_size = hparams.n_embd
         self.tokenizer = tokenizer
         self.dataset_name = hparams.dataset_name
 
-    def get_split_dataset_filename(dataset_name, split):
+    def get_split_dataset_filename(self, dataset_name, split):
         return dataset_name + "_" + split + ".csv"
 
     def prepare_data(self):
         logger.info("Inside prepare_dataset")
-        train_filename = PropertyPredictionDataModule.get_split_dataset_filename(
-            self.dataset_name, "train"
-        )
+        train_filename = self.get_split_dataset_filename(self.dataset_name, "train")
 
-        valid_filename = PropertyPredictionDataModule.get_split_dataset_filename(
-            self.dataset_name, "valid"
-        )
+        valid_filename = self.get_split_dataset_filename(self.dataset_name, "valid")
 
-        test_filename = PropertyPredictionDataModule.get_split_dataset_filename(
-            self.dataset_name, "test"
-        )
+        test_filename = self.get_split_dataset_filename(self.dataset_name, "test")
 
         train_ds = get_dataset(
-            self.hparams.data_root,
+            self.model_hparams.data_root,
             train_filename,
-            self.hparams.train_dataset_length,
-            self.hparams.aug,
-            measure_name=self.hparams.measure_name,
+            self.model_hparams.train_dataset_length,
+            self.model_hparams.aug,
+            measure_name=self.model_hparams.measure_name,
         )
 
         val_ds = get_dataset(
-            self.hparams.data_root,
+            self.model_hparams.data_root,
             valid_filename,
-            self.hparams.eval_dataset_length,
+            self.model_hparams.eval_dataset_length,
             aug=False,
-            measure_name=self.hparams.measure_name,
+            measure_name=self.model_hparams.measure_name,
         )
 
         test_ds = get_dataset(
-            self.hparams.data_root,
+            self.model_hparams.data_root,
             test_filename,
-            self.hparams.eval_dataset_length,
+            self.model_hparams.eval_dataset_length,
             aug=False,
-            measure_name=self.hparams.measure_name,
+            measure_name=self.model_hparams.measure_name,
         )
 
         self.train_ds = train_ds
         self.val_ds = [val_ds] + [test_ds]
+
+        self.test_ds = test_ds
 
         # logger.info(
         #     f"Train dataset size: {len(self.train_ds)}, val: {len(self.val_ds1), len(self.val_ds2)}, test: {len(self.test_ds)}"
@@ -476,8 +475,8 @@ class PropertyPredictionDataModule(pl.LightningDataModule):
         return [
             DataLoader(
                 ds,
-                batch_size=self.hparams.batch_size,
-                num_workers=self.hparams.num_workers,
+                batch_size=self.model_hparams.batch_size,
+                num_workers=self.model_hparams.num_workers,
                 shuffle=False,
                 collate_fn=self.collate,
             )
@@ -487,9 +486,18 @@ class PropertyPredictionDataModule(pl.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             self.train_ds,
-            batch_size=self.hparams.batch_size,
-            num_workers=self.hparams.num_workers,
+            batch_size=self.model_hparams.batch_size,
+            num_workers=self.model_hparams.num_workers,
             shuffle=True,
+            collate_fn=self.collate,
+        )
+
+    def test_dataloader(self):
+        return DataLoader(
+            self.test_ds,
+            batch_size=self.model_hparams.batch_size,
+            num_workers=self.model_hparams.num_workers,
+            shuffle=False,
             collate_fn=self.collate,
         )
 
@@ -598,7 +606,7 @@ def main():
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     # checkpoint_path = os.path.join(checkpoints_folder, margs.measure_name)
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(  # type: ignore
         period=1,
         save_last=True,
         dirpath=checkpoint_dir,
@@ -638,7 +646,7 @@ def main():
     else:
         logger.info("training from scratch")
 
-    trainer = pl.Trainer(
+    trainer = pl.Trainer(  # type: ignore
         max_epochs=margs.max_epochs,
         default_root_dir=checkpoint_root,
         gpus=1,

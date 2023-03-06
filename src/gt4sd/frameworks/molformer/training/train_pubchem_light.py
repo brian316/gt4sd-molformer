@@ -6,6 +6,7 @@ import random
 import shutil
 import subprocess
 from functools import partial
+from typing import Any, Dict
 
 import numpy as np
 import pytorch_lightning as pl
@@ -90,7 +91,7 @@ class LightningModule(pl.LightningModule):
 
     def on_save_checkpoint(self, checkpoint):
         # save RNG states each time the model and states are saved
-        out_dict = dict()
+        out_dict: Dict[str, Any] = dict()
         out_dict["torch_state"] = torch.get_rng_state()
         out_dict["cuda_state"] = torch.cuda.get_rng_state()
         if np:
@@ -180,8 +181,8 @@ class LightningModule(pl.LightningModule):
         targetsl = batch[1]
         # lengthsl = batch[2]
 
-        loss = 0
-        loss_tmp = 0
+        loss = 0.0
+        loss_tmp = 0.0
         for chunk in range(len(idxl)):
             idx = idxl[chunk]
             targets = targetsl[chunk]
@@ -202,7 +203,7 @@ class LightningModule(pl.LightningModule):
                 logits = logits.view(-1, logits.size(-1))
                 targets = targets.view(-1)
                 true_token_lprobs = F.cross_entropy(logits, targets, ignore_index=-100)
-                loss_tmp = true_token_lprobs / len(idxl)
+                loss_tmp = true_token_lprobs / len(idxl)  # type: ignore
             if chunk < len(idxl) - 1:
                 loss_tmp.backward()  # type: ignore
                 loss += loss_tmp.detach()  # type: ignore
@@ -220,8 +221,8 @@ class LightningModule(pl.LightningModule):
         idxl = batch[0]
         targetsl = batch[1]
 
-        loss = 0
-        loss_tmp = 0
+        loss = 0.0
+        loss_tmp = 0.0
         for chunk in range(len(idxl)):
             idx = idxl[chunk]
             targets = targetsl[chunk]
@@ -240,7 +241,7 @@ class LightningModule(pl.LightningModule):
                 logits = logits.view(-1, logits.size(-1))
                 targets = targets.view(-1)
                 true_token_lprobs = F.cross_entropy(logits, targets, ignore_index=-100)
-                loss_tmp = true_token_lprobs / len(idxl)
+                loss_tmp = true_token_lprobs / len(idxl)  # type: ignore
             if chunk < len(idxl) - 1:
                 loss += loss_tmp.detach()  # type: ignore
             else:
@@ -488,7 +489,7 @@ def main():
         "pin_memory": True,
     }
     # this should allow us to save a model for every x iterations and it should overwrite
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(  # type: ignore
         period=1, save_top_k=-1, verbose=True
     )
     train_loader = MoleculeModule(config.max_len, config.train_load, train_config)
@@ -496,7 +497,7 @@ def main():
     cachefiles = train_loader.get_cache()
     model = LightningModule(config, train_loader.get_vocab())
 
-    trainer = pl.Trainer(
+    trainer = pl.Trainer(  # type: ignore
         default_root_dir=config.root_dir,
         max_epochs=config.max_epochs,
         accelerator=config.accelerator,

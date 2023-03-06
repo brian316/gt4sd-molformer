@@ -115,7 +115,7 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
             batch_tmp = [
                 torch.from_numpy(t) for t in batch if t.shape[0] > 4 and t.shape[0] < 42
             ]
-            batch_tmp = torch.nn.utils.rnn.pad_sequence(
+            batch_tmp = torch.nn.utils.rnn.pad_sequence(  # type: ignore
                 batch_tmp, batch_first=True, padding_value=pad
             )
             target = [
@@ -123,7 +123,7 @@ class DatasetPubchem(torch.utils.data.IterableDataset):
                 for t in batch
                 if t.shape[0] > 4 and t.shape[0] < 42
             ]
-            target = torch.nn.utils.rnn.pad_sequence(
+            target = torch.nn.utils.rnn.pad_sequence(  # type: ignore
                 target, batch_first=True, padding_value=pad
             )
             target = torch.cat(

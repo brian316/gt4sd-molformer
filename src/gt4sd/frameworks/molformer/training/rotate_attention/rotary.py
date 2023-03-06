@@ -15,7 +15,7 @@ class RotaryEmbedding(torch.nn.Module):
         if seq_len != self.seq_len_cached:
             # if seq_len > self.seq_len_cached:
             self.seq_len_cached = seq_len
-            t = torch.arange(x.shape[seq_dim], device=x.device).type_as(self.inv_freq)
+            t = torch.arange(x.shape[seq_dim], device=x.device).type_as(self.inv_freq)  # type: ignore
             freqs = torch.einsum("i,j->ij", t, self.inv_freq)
             emb = torch.cat((freqs, freqs), dim=-1).to(x.device)
             self.cos_cached = emb.cos()[None, :, None, :]
