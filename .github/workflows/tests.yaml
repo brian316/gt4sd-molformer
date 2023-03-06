@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8"]
 
     steps:
       - uses: actions/checkout@v3
@@ -20,23 +20,29 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install pip<=22.3.1
-          python -m pip install flake8 pytest black isort mypy
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - uses: conda-incubator/setup-miniconda@v2
+          with:
+            activate-environment: gt4sd-molformer
+            environment-file: conda.yml
+            auto-activate-base: false
+            use-only-tar-bz2: true
       - name: Install gt4sd-molformer from source
         run: |
+          conda activate gt4sd-molformer
           pip install .
       - name: Check black
         run: |
+          conda activate gt4sd-molformer
           python -m black src/gt4sd --check --diff --color
       - name: Check isort
         run: |
+          conda activate gt4sd-molformer
           python -m isort src/gt4sd --check-only
       - name: Check flake8
         run: |
+          conda activate gt4sd-molformer
           python -m flake8 --disable-noqa --per-file-ignores="__init__.py:F401" src/gt4sd
       - name: Check mypy
         run: |
+          conda activate gt4sd-molformer
           python -m mypy src/gt4sd
