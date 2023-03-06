@@ -1,4 +1,4 @@
-name: Build and publish gt4sd-trainer-lm on PyPI
+name: Build and publish gt4sd-molformer on PyPI
 
 on:
   push:
