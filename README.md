@@ -6,7 +6,20 @@ We refer the users to the original repo for usage information and further detail
 
 ### Development setup & installation
 
-Create any virtual or conda environment compatible with the specs in setup.cfg. Then run:
+The recommended way to install the `gt4sd-molformer` is to create a dedicated conda environment, this will ensure all requirements are satisfied:
+
+```sh
+git clone https://github.com/GT4SD/gt4sd-molformer.git
+cd gt4sd-molformer/
+conda env create -f conda.yml
+conda activate gt4sd-molformer
+```
+Then run:
+```sh
+pip install .
+```
+
+If you would like to contribute to the package, you can install the package in editable mode:
 ```sh
 pip install -e ".[dev]" 
 ```
