@@ -11,7 +11,6 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-from apex import optimizers
 from datasets import concatenate_datasets, load_dataset
 from fast_transformers.feature_maps import GeneralizedRandomFeatures
 from pytorch_lightning.utilities import rank_zero_only, rank_zero_warn, seed
@@ -22,6 +21,14 @@ from .args import parse_args
 from .pubchem_encoder import Encoder
 from .rotate_attention.rotate_builder import RotateEncoderBuilder as rotate_builder
 
+APEX_INSTALLED: bool
+try:
+    from apex import optimizers
+
+    APEX_INSTALLED = True
+except ImportError:
+    APEX_INSTALLED = False
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -29,6 +36,11 @@ logger.addHandler(logging.NullHandler())
 class LightningModule(pl.LightningModule):
     def __init__(self, config, vocab):
         super(LightningModule, self).__init__()
+
+        if not APEX_INSTALLED:
+            logger.warning(
+                "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
+            )
 
         self.save_hyperparameters(config)
         self.vocabulary = vocab

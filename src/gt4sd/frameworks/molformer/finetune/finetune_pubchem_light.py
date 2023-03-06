@@ -5,13 +5,12 @@ import time
 from argparse import Namespace
 from functools import partial
 
+import importlib_resources
 import numpy as np
 import pandas as pd
-import importlib_resources
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-from apex import optimizers
 from fast_transformers.feature_maps import GeneralizedRandomFeatures
 from fast_transformers.masking import LengthMask as LM
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -28,6 +27,14 @@ from .ft_rotate_attention.ft_rotate_builder import (
 from .ft_tokenizer.ft_tokenizer import MolTranBertTokenizer
 from .ft_utils import normalize_smiles
 
+APEX_INSTALLED: bool
+try:
+    from apex import optimizers
+
+    APEX_INSTALLED = True
+except ImportError:
+    APEX_INSTALLED = False
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -40,6 +47,11 @@ def RMSELoss(yhat, y):
 class LightningModule(pl.LightningModule):
     def __init__(self, config, tokenizer):
         super(LightningModule, self).__init__()
+
+        if not APEX_INSTALLED:
+            logger.warning(
+                "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
+            )
 
         self.config = config
         self.hparams = config
@@ -560,7 +572,10 @@ def main():
 
     run_name = "_".join(map(str, run_name_fields))
 
-    bert_vocab_path = importlib_resources.files("gt4sd") / "frameworks/molformer/finetune/bert_vocab.txt"
+    bert_vocab_path = (
+        importlib_resources.files("gt4sd")
+        / "frameworks/molformer/finetune/bert_vocab.txt"
+    )
 
     tokenizer = MolTranBertTokenizer(bert_vocab_path)
 
