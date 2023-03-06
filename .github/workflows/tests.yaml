@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
-          with:
+        with:
             activate-environment: gt4sd-molformer
             environment-file: conda.yml
             auto-activate-base: false
