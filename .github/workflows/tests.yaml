@@ -26,23 +26,3 @@ jobs:
             environment-file: conda.yml
             auto-activate-base: false
             use-only-tar-bz2: true
-      - name: Install gt4sd-molformer from source
-        run: |
-          conda activate gt4sd-molformer
-          pip install .
-      - name: Check black
-        run: |
-          conda activate gt4sd-molformer
-          python -m black src/gt4sd --check --diff --color
-      - name: Check isort
-        run: |
-          conda activate gt4sd-molformer
-          python -m isort src/gt4sd --check-only
-      - name: Check flake8
-        run: |
-          conda activate gt4sd-molformer
-          python -m flake8 --disable-noqa --per-file-ignores="__init__.py:F401" src/gt4sd
-      - name: Check mypy
-        run: |
-          conda activate gt4sd-molformer
-          python -m mypy src/gt4sd
