@@ -743,8 +743,8 @@ def main():
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     # checkpoint_path = os.path.join(checkpoints_folder, margs.measure_name)
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(  # type: ignore
-        period=1,
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(
+        every_n_epochs=1,
         save_last=True,
         dirpath=checkpoint_dir,
         filename="checkpoint",
@@ -783,13 +783,13 @@ def main():
     else:
         logger.info("training from scratch")
 
-    trainer = pl.Trainer(  # type: ignore
+    trainer = pl.Trainer(
         max_epochs=margs.max_epochs,
         default_root_dir=checkpoint_root,
         gpus=1,
         logger=tensorboard_logger,
         resume_from_checkpoint=resume_from_checkpoint,
-        checkpoint_callback=checkpoint_callback,
+        callbacks=[checkpoint_callback],
         num_sanity_val_steps=0,
     )
 

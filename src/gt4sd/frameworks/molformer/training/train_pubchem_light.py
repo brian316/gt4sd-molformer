@@ -490,7 +490,7 @@ def main():
     }
     # this should allow us to save a model for every x iterations and it should overwrite
     checkpoint_callback = pl.callbacks.ModelCheckpoint(  # type: ignore
-        period=1, save_top_k=-1, verbose=True
+        every_n_epochs=1, save_top_k=-1, verbose=True
     )
     train_loader = MoleculeModule(config.max_len, config.train_load, train_config)
     train_loader.setup()  # config.debug)
@@ -506,8 +506,8 @@ def main():
         callbacks=[
             ModelCheckpointAtEpochEnd(),
             CheckpointEveryNSteps(config.checkpoint_every),
+            checkpoint_callback,
         ],
-        checkpoint_callback=checkpoint_callback,
         resume_from_checkpoint=config.restart_path
         if config.restart_path != ""
         else None,
