@@ -24,13 +24,12 @@ If you would like to contribute to the package, you can install the package in e
 pip install -e ".[dev]" 
 ```
 
-Note: In order to be able to train or finetune a model, [Apex Optimizers](https://nvidia.github.io/apex/optimizers.html) must be compiled with CUDA and C++ extensions via:
+Note: In order to be able to train or finetune a model, [Apex Optimizers](https://nvidia.github.io/apex/optimizers.html) must be compiled with CUDA and C++ extensions. This can be done using the provided install_apex.sh script. 
+Before executing the script, the path to the CUDA 11 installation should have been saved in the CUDA_HOME env variable. 
 
 ```
-git clone https://github.com/NVIDIA/apex
-cd apex
 export CUDA_HOME='Cuda 11 install'
-pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+bash install_apex.sh
 ```
 
 
