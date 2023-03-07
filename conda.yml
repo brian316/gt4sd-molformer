@@ -1,0 +1,12 @@
+name: gt4sd-molformer
+channels:
+  - https://conda.anaconda.org/pytorch
+  - https://conda.anaconda.org/conda-forge
+dependencies:
+  - python>=3.7,<3.9
+  - pip>=19.1,<=22.3
+  - pytorch>=1.0,<=1.12.1
+  - pip:
+      - -r requirements.txt
+      # development
+      - -r dev_requirements.txt
