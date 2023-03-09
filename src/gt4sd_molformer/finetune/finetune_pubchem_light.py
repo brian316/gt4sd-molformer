@@ -54,6 +54,9 @@ class LightningModule(pl.LightningModule):
                 "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
             )
 
+        if type(config) is dict:
+            config = Namespace(**config)
+
         self.config = config
         self.model_hparams = config
         self.mode = config.mode
@@ -287,6 +290,26 @@ class LightningModule(pl.LightningModule):
             "dataset_idx": dataset_idx,
         }
 
+    def testing_step(self, val_batch, batch_idx, dataset_idx):
+        idx = val_batch[0]
+        mask = val_batch[1]
+
+        b, t = idx.size()
+        token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
+        x = self.drop(token_embeddings)
+        x = self.blocks(x, length_mask=LM(mask.sum(-1)))
+        token_embeddings = x
+        input_mask_expanded = mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+        sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+        loss_input = sum_embeddings / sum_mask
+
+        pred = self.net.forward(loss_input).squeeze()
+
+        return {
+            "pred": pred.detach(),
+        }
+
     def validation_epoch_end(self, outputs):
         # results_by_dataset = self.split_results_by_dataset(outputs)
         tensorboard_logs = {}
@@ -377,6 +400,7 @@ class PropertyPredictionDataset(torch.utils.data.Dataset):
 
         self.tokenizer = tokenizer
 
+        self.measure_map = {}
         if measure_name:
             all_measures = df[measure_name].tolist()
             self.measure_map = {
@@ -401,7 +425,7 @@ class PropertyPredictionDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         original_smiles = self.original_smiles[index]
         canonical_smiles = self.original_canonical_map[original_smiles]
-        return canonical_smiles, self.measure_map[original_smiles]
+        return canonical_smiles, self.measure_map.get(original_smiles, 0)
 
     def __len__(self):
         return len(self.original_smiles)

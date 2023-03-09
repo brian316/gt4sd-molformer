@@ -63,6 +63,9 @@ class MultitaskModel(pl.LightningModule):
                 "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
             )
 
+        if type(config) is dict:
+            config = Namespace(**config)
+
         self.config = config
         self.model_hparams = config
         self.mode = config.mode
@@ -311,6 +314,28 @@ class MultitaskModel(pl.LightningModule):
             "dataset_idx": dataset_idx,
         }
 
+    def testing_step(self, val_batch, batch_idx, dataset_idx):
+        idx = val_batch[0]
+        mask = val_batch[1]
+
+        b, t = idx.size()
+        # forward the GPT model
+        token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
+        x = self.drop(token_embeddings)
+        x = self.blocks(x, length_mask=LM(mask.sum(-1)))
+        # input_mask_expanded = mask._mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        input_mask_expanded = mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+        sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+        loss_input = sum_embeddings / sum_mask
+
+        pred = self.net.forward(loss_input).squeeze()
+
+        if len(pred.shape) == 1:
+            return {"pred": pred.view(1, -1).detach()}
+
+        return {"pred": pred.detach()}
+
     def validation_epoch_end(self, outputs):
         # results_by_dataset = self.split_results_by_dataset(outputs)
         tensorboard_logs: Dict[str, Any] = {}
@@ -445,7 +470,7 @@ def get_dataset(data_root, filename, dataset_len, measure_names):
 
 
 class MultitaskEmbeddingDataset(torch.utils.data.Dataset):
-    def __init__(self, df, measure_names):
+    def __init__(self, df, measure_names=None):
         self.measure_names = measure_names
         df["canonical_smiles"] = df["smiles"].apply(
             lambda smi: normalize_smiles(smi, canonical=True, isomeric=False)
@@ -462,9 +487,14 @@ class MultitaskEmbeddingDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         canonical_smiles = self.df.loc[index, "canonical_smiles"]
-        measures = self.df.loc[index, self.measure_names].to_numpy()
-        mask = [0.0 if np.isnan(x) else 1.0 for x in measures]
-        measures = [0.0 if np.isnan(x) else x for x in measures]
+
+        measures = [-1.0]
+        mask = [0.0]
+        if self.measure_names is not None:
+            measures = self.df.loc[index, self.measure_names].to_numpy()
+            mask = [0.0 if np.isnan(x) else 1.0 for x in measures]
+            measures = [0.0 if np.isnan(x) else x for x in measures]
+
         return canonical_smiles, measures, mask
 
     def __len__(self):
