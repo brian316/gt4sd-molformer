@@ -29,16 +29,16 @@ jobs:
       - name: Check black
         run: |
           conda activate gt4sd-molformer
-          python -m black src/gt4sd --check --diff --color
+          python -m black src/gt4sd_molformer --check --diff --color
       - name: Check isort
         run: |
           conda activate gt4sd-molformer
-          python -m isort src/gt4sd --check-only
+          python -m isort src/gt4sd_molformer --check-only
       - name: Check flake8
         run: |
           conda activate gt4sd-molformer
-          python -m flake8 --disable-noqa --per-file-ignores="__init__.py:F401" src/gt4sd
+          python -m flake8 --disable-noqa --per-file-ignores="__init__.py:F401" src/gt4sd_molformer
       - name: Check mypy
         run: |
           conda activate gt4sd-molformer
-          python -m mypy src/gt4sd
+          python -m mypy src/gt4sd_molformer

@@ -61,6 +61,9 @@ class LightningModule(pl.LightningModule):
                 "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
             )
 
+        if type(config) is dict:
+            config = Namespace(**config)
+
         self.config = config
         self.model_hparams = config
         self.mode = config.mode
@@ -298,6 +301,31 @@ class LightningModule(pl.LightningModule):
             "dataset_idx": dataset_idx,
         }
 
+    def testing_step(self, val_batch, batch_idx, dataset_idx):
+        idx = val_batch[0]
+        mask = val_batch[1]
+
+        b, t = idx.size()
+        token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
+        x = self.drop(token_embeddings)
+        x = self.blocks(x, length_mask=LM(mask.sum(-1)))
+        # input_mask_expanded = mask._mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        input_mask_expanded = mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+        sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+        loss_input = sum_embeddings / sum_mask
+
+        z_pred = self.net.forward(loss_input).squeeze()
+
+        if len(z_pred.shape) == 1:
+            preds_cpu = F.softmax(z_pred.view(1, -1), dim=1).cpu().numpy()
+        else:
+            preds_cpu = F.softmax(z_pred, dim=1).cpu().numpy()
+
+        return {
+            "pred": preds_cpu,
+        }
+
     def validation_epoch_end(self, outputs):
         # results_by_dataset = self.split_results_by_dataset(outputs)
         tensorboard_logs = {}
@@ -399,8 +427,13 @@ def get_dataset(data_root, filename, dataset_len, aug, measure_name):
 
 
 class PropertyPredictionDataset(torch.utils.data.Dataset):
-    def __init__(self, df, measure_name, tokenizer=None, aug=True):
-        df = df[["smiles", measure_name]]
+    def __init__(self, df, measure_name=None, tokenizer=None, aug=True):
+
+        columns_of_interest = ["smiles"]
+        if measure_name is not None:
+            columns_of_interest.append(measure_name)
+
+        df = df[columns_of_interest]
         df = df.dropna()
         self.measure_name = measure_name
         df["canonical_smiles"] = df["smiles"].apply(
@@ -417,7 +450,10 @@ class PropertyPredictionDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         canonical_smiles = self.df.loc[index, "canonical_smiles"]
-        measures = self.df.loc[index, self.measure_name]
+
+        measures = -1  # not initialized value
+        if self.measure_name is not None:
+            measures = self.df.loc[index, self.measure_name]
         return canonical_smiles, measures
 
     def __len__(self):
