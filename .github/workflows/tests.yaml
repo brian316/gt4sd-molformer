@@ -29,11 +29,11 @@ jobs:
       - name: Check black
         run: |
           conda activate gt4sd-molformer
-          python -m black s/gt4sd_molformer --check --diff --color
+          python -m black src/gt4sd_molformer --check --diff --color
       - name: Check isort
         run: |
           conda activate gt4sd-molformer
-          python -m isort /gt4sd_molformer --check-only
+          python -m isort src/gt4sd_molformer --check-only
       - name: Check flake8
         run: |
           conda activate gt4sd-molformer
