@@ -26,7 +26,7 @@ If you would like to contribute to the package, we recommend the following devel
 
 1. Create a copy of the [repository](https://github.com/GT4SD/gt4sd-molformer) via the "_Fork_" button.
 
-2. Clone the gt4sd-trainer-hf-pl repository:
+2. Clone the gt4sd-molformer repository:
 
     ```sh
     git clone git@github.com:${GH_ACCOUNT_OR_ORG}/gt4sd-molformer.git
@@ -69,11 +69,11 @@ If you would like to contribute to the package, we recommend the following devel
 
     ```sh
     # blacking and sorting imports (this might change your files)
-    python -m black src/gt4sd
-    python -m isort src/gt4sd
+    python -m black src/gt4sd_molformer
+    python -m isort src/gt4sd_molformer
     # checking flake8 and mypy
-    python -m flake8 --disable-noqa --per-file-ignores="__init__.py:F401" src/gt4sd
-    python -m mypy src/gt4sd
+    python -m flake8 --disable-noqa --per-file-ignores="__init__.py:F401" src/gt4sd_molformer
+    python -m mypy src/gt4sd_molformer
     ```
 
     Ensure the license headers:
