@@ -14,10 +14,8 @@ class Encoder:
     def __init__(self, max_length=500, add_bos=True, add_eos=True, feature_size=32):
         self.vocab_encoder = torch.load(
             pkg_resources.resource_filename(
-                "gt4sd",
+                "gt4sd_molformer",
                 os.path.join(
-                    "frameworks",
-                    "molformer",
                     "training",
                     "pubchem_canon_zinc_final_vocab_sorted.pth",
                 ),

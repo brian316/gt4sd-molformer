@@ -751,8 +751,8 @@ def main():
     logger.info(run_name)
 
     bert_vocab_path = (
-        importlib_resources.files("gt4sd")
-        / "frameworks/molformer/finetune/bert_vocab.txt"
+        importlib_resources.files("gt4sd_molformer")
+        / "finetune/bert_vocab.txt"
     )
 
     tokenizer = MolTranBertTokenizer(bert_vocab_path)
