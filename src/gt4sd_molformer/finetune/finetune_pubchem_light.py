@@ -363,7 +363,7 @@ class LightningModule(pl.LightningModule):
         for k in tensorboard_logs.keys():
             self.log(k, tensorboard_logs[k])
 
-        logger.info("Validation: Current Epoch", self.current_epoch)
+        logger.info(f"Validation: Current Epoch {self.current_epoch}")
         append_to_file(
             os.path.join(self.model_hparams.results_dir, "results_" + ".csv"),
             f"{self.model_hparams.measure_name}, {self.current_epoch},"
@@ -379,10 +379,10 @@ class LightningModule(pl.LightningModule):
 
 def get_dataset(data_root, filename, dataset_len, aug, measure_name):
     df = pd.read_csv(os.path.join(data_root, filename))
-    logger.info("Length of dataset:", len(df))
+    logger.info(f"Length of dataset: {len(df)}")
     if dataset_len:
         df = df.head(dataset_len)
-        logger.info("Warning entire dataset not used:", len(df))
+        logger.info(f"Warning entire dataset not used: {len(df)}")
     dataset = PropertyPredictionDataset(df, measure_name, aug)
     return dataset
 
@@ -605,8 +605,7 @@ def main():
     run_name = "_".join(map(str, run_name_fields))
 
     bert_vocab_path = (
-        importlib_resources.files("gt4sd")
-        / "frameworks/molformer/finetune/bert_vocab.txt"
+        importlib_resources.files("gt4sd_molformer") / "finetune/bert_vocab.txt"
     )
 
     tokenizer = MolTranBertTokenizer(bert_vocab_path)
@@ -653,7 +652,7 @@ def main():
         logger.info("# training from scratch")
         model = LightningModule(margs, tokenizer)
     else:
-        logger.info("# loaded pre-trained model from {args.seed_path}")
+        logger.info(f"# loaded pre-trained model from {margs.seed_path}")
         model = LightningModule(margs, tokenizer).load_from_checkpoint(
             margs.seed_path,
             strict=False,

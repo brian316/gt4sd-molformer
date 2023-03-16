@@ -418,10 +418,10 @@ class LightningModule(pl.LightningModule):
 
 def get_dataset(data_root, filename, dataset_len, aug, measure_name):
     df = pd.read_csv(os.path.join(data_root, filename))
-    logger.info("Length of dataset:", len(df))
+    logger.info(f"Length of dataset: {len(df)}")
     if dataset_len:
         df = df.head(dataset_len)
-        logger.info("Warning entire dataset not used:", len(df))
+        logger.info(f"Warning entire dataset not used: {len(df)}")
     dataset = PropertyPredictionDataset(df, measure_name, aug)
     return dataset
 
@@ -639,8 +639,7 @@ def main():
     logger.info(run_name)
 
     bert_vocab_path = (
-        importlib_resources.files("gt4sd_molformer")
-        / "finetune/bert_vocab.txt"
+        importlib_resources.files("gt4sd_molformer") / "finetune/bert_vocab.txt"
     )
 
     tokenizer = MolTranBertTokenizer(bert_vocab_path)
@@ -685,7 +684,7 @@ def main():
         logger.info("# training from scratch")
         model = LightningModule(margs, tokenizer)
     else:
-        logger.info("# loaded pre-trained model from {args.seed_path}")
+        logger.info(f"# loaded pre-trained model from {margs.seed_path}")
         model = LightningModule(margs, tokenizer).load_from_checkpoint(
             margs.seed_path,
             strict=False,
