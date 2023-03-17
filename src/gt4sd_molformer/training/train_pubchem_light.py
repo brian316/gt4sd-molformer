@@ -8,6 +8,7 @@ import subprocess
 from functools import partial
 from typing import Any, Dict
 
+import importlib_resources
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -271,54 +272,78 @@ class MoleculeModule(pl.LightningDataModule):
     def setup(self, stage=None):
         # using huggingface dataloader
         # create cache in tmp directory of locale mabchine under the current users name to prevent locking issues
-        pubchem_path = {"train": "../data/pubchem/CID-SMILES-CANONICAL.smi"}
+
+        data_cases = os.listdir(self.data_path)
+
+        pubchem_path = None
+        if "pubchem" in data_cases and os.path.join(
+            self.data_path, "pubchem", "CID-SMILES-CANONICAL.smi"
+        ):
+            pubchem_path = {
+                "train": os.path.join(
+                    self.data_path, "pubchem", "CID-SMILES-CANONICAL.smi"
+                )
+            }
+
         if "CANONICAL" in pubchem_path:
-            pubchem_script = "./pubchem_canon_script.py"
+            pubchem_script = (
+                importlib_resources.files("gt4sd_molformer")
+                / "training/pubchem_canon_script.py"
+            )
         else:
-            pubchem_script = "./pubchem_script.py"
-        zinc_path = "../data/ZINC"
-        if "ZINC" in self.data_path or "zinc" in self.data_path:
-            zinc_files = [f for f in glob.glob(os.path.join(zinc_path, "*.smi"))]
+            pubchem_script = (
+                importlib_resources.files("gt4sd_molformer")
+                / "training/pubchem_script.py"
+            )
+
+        if "ZINC" in self.data_cases and "pubchem" not in self.data_cases:
+            zinc_files = [
+                f for f in glob.glob(os.path.join(self.data_path, "ZINC", "*.smi"))
+            ]
             for zfile in zinc_files:
                 logger.info(zfile)
             self.data_path = {"train": zinc_files}
             dataset_dict = load_dataset(
-                "./zinc_script.py",
+                importlib_resources.files("gt4sd_molformer")
+                / "training/zinc_script.py",
                 data_files=self.data_path,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "zinc"),
                 split="train",
             )
 
-        elif "pubchem" in self.data_path:
+        elif "ZINC" not in self.data_cases and "pubchem" in self.data_cases:
             dataset_dict = load_dataset(
                 pubchem_script,
                 data_files=pubchem_path,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "pubchem"),
                 split="train",
             )
-        elif (
-            "both" in self.data_path
-            or "Both" in self.data_path
-            or "BOTH" in self.data_path
-        ):
+        elif "ZINC" in self.data_cases and "pubchem" in self.data_cases:
             dataset_dict_pubchem = load_dataset(
                 pubchem_script,
                 data_files=pubchem_path,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "pubchem"),
                 split="train",
             )
-            zinc_files = [f for f in glob.glob(os.path.join(zinc_path, "*.smi"))]
+            zinc_files = [
+                f for f in glob.glob(os.path.join(self.data_path, "ZINC", "*.smi"))
+            ]
             for zfile in zinc_files:
                 logger.info(zfile)
             self.data_path = {"train": zinc_files}
             dataset_dict_zinc = load_dataset(
-                "./zinc_script.py",
+                importlib_resources.files("gt4sd_molformer")
+                / "training/zinc_script.py",
                 data_files=self.data_path,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "zinc"),
                 split="train",
             )
             dataset_dict = concatenate_datasets(
                 [dataset_dict_zinc, dataset_dict_pubchem]
+            )
+        else:
+            raise ValueError(
+                f"{self.data_path} does not include ZINC or pubchem directory."
             )
         self.pubchem = dataset_dict
         logger.info(dataset_dict.cache_files)
