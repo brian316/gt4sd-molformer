@@ -58,11 +58,6 @@ class MultitaskModel(pl.LightningModule):
     def __init__(self, config, tokenizer):
         super(MultitaskModel, self).__init__()
 
-        if not APEX_INSTALLED:
-            logger.warning(
-                "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
-            )
-
         if type(config) is dict:
             config = Namespace(**config)
 
@@ -211,6 +206,12 @@ class MultitaskModel(pl.LightningModule):
             module.weight.data.fill_(1.0)
 
     def configure_optimizers(self):
+
+        if not APEX_INSTALLED:
+            raise RuntimeError(
+                "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
+            )
+
         # separate out all parameters to those that will and won't experience regularizing weight decay
         decay = set()
         no_decay = set()
