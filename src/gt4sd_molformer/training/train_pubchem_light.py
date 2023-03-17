@@ -306,11 +306,11 @@ class MoleculeModule(pl.LightningDataModule):
             ]
             for zfile in zinc_files:
                 logger.info(zfile)
-            self.data_path = {"train": zinc_files}
+            self.data_paths = {"train": zinc_files}
             dataset_dict = load_dataset(
                 importlib_resources.files("gt4sd_molformer")
                 / "training/zinc_script.py",
-                data_files=self.data_path,
+                data_files=self.data_paths,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "zinc"),
                 split="train",
             )
@@ -330,17 +330,17 @@ class MoleculeModule(pl.LightningDataModule):
                 split="train",
             )
             zinc_files = [
-                f for f in glob.glob(os.path.join(self.data_path, "ZINC", "*.smi"))
+                f for f in glob.glob(os.path.join(self.data_paths, "ZINC", "*.smi"))
             ]
             for zfile in zinc_files:
                 logger.info(zfile)
-            self.data_path = {"train": zinc_files}
+            self.data_paths = {"train": zinc_files}
             dataset_dict_zinc = load_dataset(
                 str(
                     importlib_resources.files("gt4sd_molformer")
                     / "training/zinc_script.py"
                 ),
-                data_files=self.data_path,
+                data_files=self.data_paths,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "zinc"),
                 split="train",
             )
@@ -349,7 +349,7 @@ class MoleculeModule(pl.LightningDataModule):
             )
         else:
             raise ValueError(
-                f"{self.data_path} does not include ZINC or pubchem directory."
+                f"{self.data_paths} does not include ZINC or pubchem directory."
             )
         self.pubchem = dataset_dict
         logger.info(dataset_dict.cache_files)
