@@ -5,6 +5,7 @@ import os
 import random
 import shutil
 import subprocess
+from argparse import Namespace
 from functools import partial
 from typing import Any, Dict
 
@@ -43,6 +44,9 @@ class LightningModule(pl.LightningModule):
             logger.warning(
                 "Apex is not installed. Molformer's training is not supported. Install Apex from source to enable training."
             )
+
+        if type(config) is dict:
+            config = Namespace(**config)
 
         self.save_hyperparameters(config)
         self.vocabulary = vocab
@@ -286,12 +290,12 @@ class MoleculeModule(pl.LightningDataModule):
             }
 
         if "CANONICAL" in pubchem_path:
-            pubchem_script = (
+            pubchem_script = str(
                 importlib_resources.files("gt4sd_molformer")
                 / "training/pubchem_canon_script.py"
             )
         else:
-            pubchem_script = (
+            pubchem_script = str(
                 importlib_resources.files("gt4sd_molformer")
                 / "training/pubchem_script.py"
             )
@@ -332,8 +336,10 @@ class MoleculeModule(pl.LightningDataModule):
                 logger.info(zfile)
             self.data_path = {"train": zinc_files}
             dataset_dict_zinc = load_dataset(
-                importlib_resources.files("gt4sd_molformer")
-                / "training/zinc_script.py",
+                str(
+                    importlib_resources.files("gt4sd_molformer")
+                    / "training/zinc_script.py"
+                ),
                 data_files=self.data_path,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "zinc"),
                 split="train",
