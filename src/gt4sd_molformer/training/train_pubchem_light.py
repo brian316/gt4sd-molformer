@@ -275,7 +275,7 @@ class MoleculeModule(pl.LightningDataModule):
 
         data_cases = os.listdir(self.data_path)
 
-        pubchem_path = None
+        pubchem_path = {}
         if "pubchem" in data_cases and os.path.join(
             self.data_path, "pubchem", "CID-SMILES-CANONICAL.smi"
         ):
