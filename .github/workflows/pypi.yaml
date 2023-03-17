@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-publish:
-    name: Build and publish gt4sd-trainer-lm on PyPI
+    name: Build and publish gt4sd-molformer on PyPI
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
