@@ -296,7 +296,7 @@ class MoleculeModule(pl.LightningDataModule):
                 / "training/pubchem_script.py"
             )
 
-        if "ZINC" in self.data_cases and "pubchem" not in self.data_cases:
+        if "ZINC" in data_cases and "pubchem" not in data_cases:
             zinc_files = [
                 f for f in glob.glob(os.path.join(self.data_path, "ZINC", "*.smi"))
             ]
@@ -311,14 +311,14 @@ class MoleculeModule(pl.LightningDataModule):
                 split="train",
             )
 
-        elif "ZINC" not in self.data_cases and "pubchem" in self.data_cases:
+        elif "ZINC" not in data_cases and "pubchem" in data_cases:
             dataset_dict = load_dataset(
                 pubchem_script,
                 data_files=pubchem_path,
                 cache_dir=os.path.join("/tmp", getpass.getuser(), "pubchem"),
                 split="train",
             )
-        elif "ZINC" in self.data_cases and "pubchem" in self.data_cases:
+        elif "ZINC" in data_cases and "pubchem" in data_cases:
             dataset_dict_pubchem = load_dataset(
                 pubchem_script,
                 data_files=pubchem_path,
