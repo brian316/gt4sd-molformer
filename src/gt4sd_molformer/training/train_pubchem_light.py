@@ -330,7 +330,7 @@ class MoleculeModule(pl.LightningDataModule):
                 split="train",
             )
             zinc_files = [
-                f for f in glob.glob(os.path.join(self.data_paths, "ZINC", "*.smi"))
+                f for f in glob.glob(os.path.join(self.data_path, "ZINC", "*.smi"))
             ]
             for zfile in zinc_files:
                 logger.info(zfile)
